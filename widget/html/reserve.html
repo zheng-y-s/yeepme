@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Reserve</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<style type="text/css">
+		html,body{width:100%;height:100%;overflow:hidden;}
+		body{background:rgba(0,0,0,0.3);}
+		.reserve_bg{width:100%;height:100%;display:flex;justify-content:center;align-items:center;}
+		.reserve{background:#f7ecd8;width:80%;border-radius:10px;overflow:hidden;}
+		.top{margin:10px;}
+		.top div{font-size:18px;}
+		.top .b{font-size:26px;text-align: center;}
+		.bottom{background-color:#e2d9c7;}
+		.bottom .btns{display:flex;padding:10px;}
+		.btn-type1{margin:0;}
+	</style>
+</head>
+
+<body>
+	<div class="reserve_bg">
+		<div class="reserve">
+			<div class="top">
+				<div>{{text}}</div>
+				<div class="b">{{data.use_time}}</div>
+			</div>
+			<div class="bottom">
+                <div class="btns">
+                    <button type="button" class="btn btn-type1" v-on:click="qx">{{cancel}}</button>
+                    <button type="button" class="btn btn-type1" v-on:click="gb">{{close}}</button>
+                </div>
+            </div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		apiready = function(){
+			var data = api.pageParam;
+			new Vue({
+				el: ".reserve",
+				data: {
+					data: data,
+					text: lang.reserve_text,
+					cancel: lang.reserve_cancel,
+					close: lang.reserve_close
+				},
+				methods: {
+					qx: function(){
+						http_post("user/reserveCancel",{},true,function(rs){
+							toast(rs.msg);
+							api.closeFrame();
+						});
+					},
+					gb: function(){
+						api.closeFrame();
+					}
+				},
+			});
+		};
+	</script>
+</body>
+
+</html>

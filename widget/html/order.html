@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Order</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<style type="text/css">
+		body{background:none;padding-top:0;}
+		#info .content{margin:0 20px;}
+	</style>
+</head>
+
+<body>
+	<div class="container" id="info">
+		<div id="content">
+			<div class="content">
+				<div class="title">{{company}}</div>
+				<div class="show">
+					<img :src="devicon" alt="" class="img-responsive">
+				</div>
+				<div class="items">
+					<div class="item hr">
+						<img src="../images/list_id.png" alt="">
+						<div class="text">{{code}}</div>
+						<div class="value">{{devcode}}</div>
+					</div>
+					<div class="item hr">
+						<img src="../images/list_scan.png" alt="">
+						<div class="text">{{pick_time}}</div>
+						<div class="value">{{opentime}}</div>
+					</div>
+					<!-- <div class="item border">
+						<img src="../images/list_map.png" alt="">
+						<div class="text">{{distance}}</div>
+						<div class="value">0<span>KMS</span></div>
+					</div> -->
+					<div class="item">
+						<img src="../images/list_time.png" alt="">
+						<div class="text">{{duration}}</div>
+						<div class="value">{{timetext}}</div>
+					</div>
+					<!-- <div class="item">
+						<img src="../images/list_power.png" alt="">
+						<div class="text">{{bat_life}}</div>
+						<div class="value">13<span>KMS</span></div>
+					</div> -->
+				</div>
+				<div class="bottom">
+					<div class = "btns">
+						<button type = "button" class = "btn" v-bind:class="[isAct?'btn-type2':(isOff?'btn-off':'btn-on')]" v-on:click="act">
+							{{islock?(isAct?locking:lock):(isAct?unlocking:unlock)}}
+						</button>
+						<button type = "button" class = "btn" v-bind:class="[isBack?'btn-type3':'btn-type2']" v-on:click="reback">{{btn_return}}</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		var vue,order,act = function(data){
+
+			data = JSON.parse(data);
+			if(vue.isAct){
+				if(data.msg == "push_unlock"){
+					vue.islock = true;
+					vue.isOff = true;
+					vue.isBack = false;
+					order.status = 1;
+					toast(lang.order_unlockok);
+				}else{
+					vue.islock = false;
+					vue.isOff = false;
+					vue.isBack = true;
+					order.status = 2;
+					toast(lang.order_lockok);
+				}
+				clearTimeout(vue.timer);
+				vue.timer = false;
+				vue.isAct = !vue.isAct;
+			}
+		};
+		apiready = function(){
+			order = api.pageParam;
+			//console.log(order.type);
+			vue = new Vue({
+				el: "#info",
+				data: {
+					isAct: false,
+					isOff: (order.status==1)?true:false,
+					isBack: (order.status==1)?false:true,
+					islock: (order.status==1)?true:false,
+					timer: false,
+					code: lang.order_code,
+					btn_return: lang.order_btn_return,
+					pick_time: lang.order_pick_time,
+					distance: lang.order_distance,
+					duration: lang.order_duration,
+					bat_life: lang.order_bat_life,
+					lock: lang.order_lock,
+					locking: lang.order_locking,
+					unlock: lang.order_unlock,
+					unlocking: lang.order_unlocking,
+					company: $api.getStorage("user_comp_name"),
+					devcode: order.dev_code,
+					devicon: "../images/dev/"+order.type+".png",
+					timetext: "00:00:00",
+					total: order.total,
+					opentime: order.rent_time
+				},
+				created: function(){
+					//var vue = this;
+					setInterval(function(){
+						vue.total++;
+						var h = i = s = 0, time = vue.total;
+						if(time > 60){
+							s = time % 60;
+							i = parseInt(time / 60);
+							if(i > 60){
+								h = parseInt(i / 60);
+								i = i % 60;
+							}
+						}else{
+							s = time;
+						}
+						vue.timetext = (h<10?"0"+h:h)+":"+(i<10?"0"+i:i)+":"+(s<10?"0"+s:s);
+					},1000);
+				},
+				methods: {
+					act: function(e){
+						if(!vue.isAct){
+							/*if($api.html(e.target) == lang.order_lock){
+								var type = "unlock";
+							}else{
+								var type = "lock";
+							}*/
+							var type = vue.islock?"lock":"unlock";
+							vue.isAct = true;
+							vue.isBack = false;
+							http_post("user/setting",{
+								id: order.id,
+								act: type
+							},true,function(rs){
+								vue.timer = setTimeout(function(){
+									http_post("user/order",{},true,function(rs){
+										if(rs.data.status != order.status){
+											vue.islock = !vue.islock;
+											vue.isOff = !vue.isOff;
+											vue.isBack = (rs.data.status == 1)?false:true;
+											var test = (rs.data.status == 1)?lang.order_unlockok:lang.order_lockok;
+										}else{ 
+											var test = "TimeOut";
+										}
+										toast(test);
+										vue.isAct = !vue.isAct;
+										order = rs.data;
+									});
+								},26000);
+							});
+						}
+					},
+					reback: function(){
+						if(vue.isBack){
+							api.openWin({
+								name: "reback",
+								url: "return.html",
+								pageParam: {
+									data: order
+								}
+							});
+						}
+					}
+				}
+			});
+		};
+	</script>
+</body>
+
+</html>

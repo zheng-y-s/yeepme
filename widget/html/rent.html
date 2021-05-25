@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Rent</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<style type="text/css">
+		body{background:#fff;overflow:hidden;}
+		#history{overflow:hidden;}
+		.bgimg{position:absolute;top:0;left:0;bottom:0;right:0;z-index:-1;max-height:100%;min-width:100%;background:none;}
+		.back{border-radius:30px;height:48px;text-align:center;font-weight:bold;color:#f49600;line-height:24px;background-color:#f3ebd6;margin:20px;box-shadow:0px 1px 7px #563636;margin-top:1px;position:fixed;top:35px;left:12px;right:12px;padding:12px;}
+		.back img{height:100%;display:inline-block;margin-right:10px;}
+		.msg{width:50%;}
+		.scan>div{position:relative;}
+		.scan_back{position:absolute;width:100%;height:50px;bottom:0;left:0;}
+	</style>
+</head>
+
+<body>
+	<div class="container" id="history">
+		<div id="content">
+			<!-- <div class="back">
+				<img src="../images/left.png" alt="" class="img-responsive">RETOUR
+			</div> -->
+			<div class="scan">
+				<div>
+					<img src="../images/scan.png" alt="" class="img-responsive">
+					<div class="scan_back" v-on:click="back"></div>
+				</div>
+			</div>
+			<div class="content">
+				<div class="item">
+					<div class="title">{{dev_code}}</div>
+					<div class="c">
+						<div class="img">
+							<img :src="dev_icon" alt="" class="img-responsive">
+						</div>
+						<div class="msg">
+							<div>
+								<div class="l">
+									<img src="../images/list_power.png" alt="" class="img-responsive">
+								</div>
+								<div class="r">
+									<span>{{batprt}}</span>%
+								</div>
+							</div>
+							<div>
+								<button type="button" class="btn btn-type1" v-on:click="lighting">{{dev_lighting}}</button>
+								<!-- <div class="l">
+									<img src="../images/list_map.png" alt="" class="img-responsive">
+								</div>
+								<div class="r">
+									<span>12</span>KMS
+								</div> -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		apiready = function(){
+			
+			if(!api.pageParam){
+			}else if(!api.pageParam.page){
+				var scan = api.require('FNScanner');
+				scan.openView({
+					rect:{
+						x: 0,
+						y: 0,
+						w: api.winWidth,
+						h: api.winHeight
+					}
+				},function(ret,err){
+					if(!ret){
+						api.alert({
+							title: "Tips",
+							msg: JSON.stringify(err)
+						});
+						return;
+					}
+					switch(ret.eventType){
+						case "show":
+							api.openFrame({
+								name: "rent",
+								url: 'rent.html',
+								pageParam: {
+									data: api.pageParam.data,
+									page: "rent"
+								},
+								rect:{
+									x: 0,
+									y: 0,
+									w: api.winWidth,
+									h: api.winHeight
+								},
+							});
+							break;
+						case "success":
+							http_post("user/rent",{
+								id: ret.content
+							},true,function(rs){
+								api.openWin({
+									name: "wait",
+									url: "wait.html",
+								});
+								setTimeout(function(){
+									api.closeWin();
+								},1000);
+							},function(){
+								api.closeWin();
+							});
+							break;
+						default:
+					}
+				});
+
+				api.addEventListener({
+					name:'resume'
+				},function(ret,err){
+					scan.onResume();
+				});
+				api.addEventListener({
+					name:'pause'
+				},function(ret,err){
+					scan.onPause();
+				});
+			}else{
+				var dev = api.pageParam.data,obj = $api.offset($api.dom(".scan>div>img"));
+				$api.css(document.body,"background:none;");
+				$api.fixStatusBar($api.dom("#history"));
+				//document.body.scrollTop = document.body.scrollHeight
+				//$api.css(document.body,"overflow: hidden;");
+				$api.prepend($api.dom("#history"),'<img src="../images/background.jpg" class="bgimg" />');
+				var t = api.safeArea.top+5;
+				//$api.css($api.dom(".bgimg"),"-webkit-clip-path: polygon(0% 0%, 0% 100%, "+obj.l+"px 100%, "+obj.l+"px "+obj.t+"px, "+(obj.l+obj.w)+"px "+obj.t+"px, "+(obj.l+obj.w)+"px "+(obj.t+obj.h)+"px, "+obj.l+"px "+(obj.t+obj.h)+"px, "+obj.l+"px 100%, 100% 100%, 100% 0%);clip-path: polygon(0% 0%, 0% 100%, "+obj.l+"px 100%, "+obj.l+"px "+obj.t+"px, "+(obj.l+obj.w)+"px "+obj.t+"px, "+(obj.l+obj.w)+"px "+(obj.t+obj.h)+"px, "+obj.l+"px "+(obj.t+obj.h)+"px, "+obj.l+"px 100%, 100% 100%, 100% 0%);");
+				$api.css($api.dom(".bgimg"),"-webkit-clip-path: polygon(0% 0%, 0% 100%, "+obj.l+"px 100%, "+obj.l+"px "+t+"px, "+(obj.l+obj.w)+"px "+t+"px, "+(obj.l+obj.w)+"px "+(t+obj.h)+"px, "+obj.l+"px "+(t+obj.h)+"px, "+obj.l+"px 100%, 100% 100%, 100% 0%);clip-path: polygon(0% 0%, 0% 100%, "+obj.l+"px 100%, "+obj.l+"px "+t+"px, "+(obj.l+obj.w)+"px "+t+"px, "+(obj.l+obj.w)+"px "+(t+obj.h)+"px, "+obj.l+"px "+(t+obj.h)+"px, "+obj.l+"px 100%, 100% 100%, 100% 0%);");
+				new Vue({
+					el: "#content",
+					data: {
+						dev_lighting: lang.dev_lighting,
+						dev_code: dev.dev_code,
+						dev_icon: "../images/dev/"+dev.type+".png",
+						batprt: dev.batprt.replace("%",""),
+					},
+					methods: {
+						back: function(){
+							api.closeWin();
+						},
+						lighting: function(e){
+							//alert("sdssf");
+						},
+					}
+				});
+			}
+		};
+	</script>
+</body>
+
+</html>

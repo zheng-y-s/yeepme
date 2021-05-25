@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Main</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+	<div class="container" id="index">
+		<div id="content">
+			<div id="header">
+				<div class="user">
+					<div class="avatar">
+						<img src="../images/avatar.png" alt="" class="img-responsive">
+					</div>
+					<div class="logo">
+						<img src="../images/logo.png" alt="" class="img-responsive">
+					</div>
+				</div>
+				<div class="menu" v-on:click="showMenu()">
+					<div class="c">
+						<div class="text">MENU</div>
+						<img src="../images/bottom.png" alt="" class="img-responsive">
+					</div>
+				</div>
+			</div>
+			<div id="hide-menu">
+				<div class="item select">
+					<img src="../images/hide_menu_home.png" class="img-responsive" v-on:click="go($event,'home')">
+				</div>
+				<div class="item">
+					<img src="../images/hide_menu_play.png" class="img-responsive" v-on:click="go($event,'history')">
+				</div>
+				<div class="item">
+					<img src="../images/hide_menu_help.png" class="img-responsive" v-on:click="go($event,'help')">
+				</div>
+				<div class="item">
+					<img src="../images/hide_menu_setting.png" class="img-responsive" v-on:click="go($event,'setting')">
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		var openPage = function(url,parm){
+			api.openFrame({
+				name: "home",
+				url: url,
+				pageParam: parm
+			});
+		},getOrder = function(isShow,type){
+			http_post("user/order",{},true,function(rs){
+				if(rs.data){
+					if(type == "return"){
+						if(rs.data.status == 2){
+							api.openWin({
+								name: "vaild",
+								url: "validate.html",
+								pageParam: {
+									data: rs.data,
+								},
+							});
+						}else{
+							api.openWin({
+								name: "return",
+								url: "return.html",
+								pageParam: rs.data
+							});
+						}
+					}else{
+						openPage("order.html",rs.data);
+					}
+				}else if(isShow){
+					toast(rs.msg);
+				}
+			});
+		};
+
+		apiready = function(){
+			var ci = 0, time1, time2;
+			$api.fixStatusBar($api.dom("#index"))
+			api.addEventListener({
+				name: 'keyback'
+			},function(ret,err){
+				if(ci == 0){
+					time1 = new Date().getTime();
+					ci = 1;
+					toast(lang.sys_back_text);
+				}else if(ci == 1){
+					time2 = new Date().getTime();
+					if(time2 - time1 < 3000){
+						api.closeWidget({
+							id: api.appId,
+							silent: true,
+							animation: {
+								type: "suck",
+								subType:"from_right",
+								duration:300
+							}
+						});
+					}else{
+						time1 = new Date().getTime();
+						toast(lang.sys_back_text);
+					}
+				}
+				return false;
+			});
+			var offset = $api.offset($api.dom(".container")), t = offset.t+offset.h+18;
+			api.openFrame({
+				name: "home",
+				rect: {
+					marginLeft: 0,
+					marginTop: t,
+					marginBottom: 0,
+					marginRight: 0
+				},
+				url: "home.html"
+			});
+ 
+			new Vue({
+				el: ".container",
+				data: {
+					open: false,
+					move: true
+				},
+				methods: {
+					go: function(e,k){
+						var obj = e.currentTarget.parentNode;
+						if(obj.className.indexOf("select") == -1){
+							$api.dom(".select").classList.remove("select");
+							obj.classList.add("select");
+							api.openFrame({
+								name: "home",
+								rect: {
+									marginLeft: 0,
+									marginTop: t+63,
+									marginBottom: 0,
+									marginRight: 0
+								},
+								url: k+".html"
+							});
+						}
+					},
+					showMenu: function(){
+						var vue = this;
+						if(vue.move){
+							vue.move = false;
+							if(vue.open){
+								vue.open = false;
+								var h = -63;
+							}else{
+								$api.css($api.dom("#hide-menu"),"height:auto");
+								vue.open = true;
+								var h = 63;
+							}
+							api.animation({
+								name: "home",
+								duration: 200,
+								curve: "linear",
+								translation:{
+									y: h
+								}
+							},function(){
+								api.setFrameAttr({
+									name: "home",
+									rect: {
+										marginTop: t+(h>0?h:0),
+										marginRight: 0,
+										marginBottom: 0,
+										marginLeft: 0
+									}
+								});
+								vue.move = true;
+								if(!vue.open) $api.css($api.dom("#hide-menu"),"height:0");
+							});
+						}
+					}
+				}
+			});
+		};
+	</script>
+</body>
+</html>

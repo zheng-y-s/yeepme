@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Setting</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<style type="text/css">
+		body{background:none;padding-top:0;}
+	</style>
+</head>
+
+<body>
+	<div class="container" id="user">
+		<div id="content">
+			<div class="content">
+				<div class="camera">
+					<img src="../images/user_camera.png" alt="" class="img-responsive">
+				</div>
+				<div class="avatar">
+					<img src="../images/user.png" alt="" class="img-responsive">
+				</div>
+
+				<div class="info">
+					<div>NAME</div>
+					<div>Mot de passe</div>
+					<div>+123456789</div>
+				</div>
+				<div class="t">
+					<div>Contrat</div>
+					<div>Contrat location</div>
+					<div>Contrat de location</div>
+				</div>
+
+				<button type="button" class="btn btn-type1" @click="signOut">Deconnection</button>
+
+				<div class="l">
+					<a href="#"><img src="../images/link_facebook.png" alt="" class="img-responsive"></a>
+					<a href="#"><img src="../images/link_q.png" alt="" class="img-responsive"></a>
+				</div>
+
+				<div class="version">
+					<img src="../images/link_logo.png" alt="">
+					<span>1.0</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		apiready = function(){
+			new Vue({
+				el: "#user",
+				data: {},
+				methods: {
+					signOut: function(){
+						$api.clearStorage();
+						$api.setStorage("first","ok");
+						openWin("login","html/login.html");
+						setTimeout(function(){
+							api.closeWin({
+								name: "main"
+							});
+						}, 1000);
+						
+					}
+				}
+			});
+		};
+	</script>
+</body>
+</html>

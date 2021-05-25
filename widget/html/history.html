@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>History</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<style type="text/css">
+		body{background:none;padding-top:0;}
+		#history .content .item .c .img{width:40%;}
+		#history .content .item .c .msg{width:60%;}
+		#history .content .item .c .msg .l img{width:20px}
+		#history .content .item .c .msg .text{float:left;margin:3px 0 0 25px;color:#cac2b5;}
+		#history .content .item .c .msg .r{font-size:14px;font-weight:bold;}
+	</style>
+</head>
+
+<body>
+	<div class="container" id="history">
+		<div id="content">
+			<div class="content">
+				<div v-for="(item,index) in data" class="item">
+					<div class="title">{{item.rent_time}}</div>
+					<div class="c">
+						<div class="img">
+							<img :src="'../images/dev/'+item.dev_type+'.png'" alt="" class="img-responsive">
+						</div>
+						<div class="msg">
+							<div>
+								<div class="l">
+									<img src="../images/list_id.png" alt="" class="img-responsive">
+								</div>
+								<div class="text">{{code}}</div>
+								<div class="r">
+									{{item.dev_code}}
+								</div>
+							</div>
+							<div>
+								<div class="l">
+									<img src="../images/list_map.png" alt="" class="img-responsive">
+								</div>
+								<div class="text">{{distance}}</div>
+								<div class="r">
+									12 KMS
+								</div>
+							</div>
+							<div>
+								<div class="l">
+									<img src="../images/list_time.png" alt="" class="img-responsive">
+								</div>
+								<div class="text">{{duration}}</div>
+								<div class="r">
+									{{item.time_text}}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		apiready = function(){
+			new Vue({
+				el: ".content",
+				data: {
+					btn_return: lang.devlist_return,
+					code: lang.order_code,
+					pick_time: lang.order_pick_time,
+					distance: lang.order_distance,
+					duration: lang.order_duration,
+					company: $api.getStorage("user_comp_name"),
+					page: 1,
+					isload: false,
+					data: []
+				},
+				created: function(){
+					var vue = this;
+					vue.isload = true;
+					http_post("user/history",{},true,function(rs){
+						vue.data = rs.data;
+						vue.isload = false;
+						vue.page++;
+					});
+					window.addEventListener('scroll',this.scroll);
+				},
+				methods: {
+					// 获取滚动条当前的位置
+					getScrollTop: function(){
+						var scrollTop = 0;
+						if(document.documentElement && document.documentElement.scrollTop){
+							scrollTop = document.documentElement.scrollTop;
+						}else if(document.body){
+							scrollTop = document.body.scrollTop;
+						}
+						return scrollTop;
+					},
+					// 获取当前可视范围的高度
+					getClientHeight: function(){
+						var clientHeight = 0;
+						if(document.body.clientHeight && document.documentElement.clientHeight){
+							clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+						}else{
+							clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+						}
+						return clientHeight;
+					},
+					// 获取文档完整的高度
+					getScrollHeight: function(){
+						return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+					},
+					scroll: function(){
+						if(this.getScrollTop() + this.getClientHeight()== this.getScrollHeight()) {
+							if(!this.isload){
+								this.isload = true;
+								var vue = this;
+								http_post("user/history",{
+									page: vue.page,
+								},true,function(rs){
+									if(rs.data.length>0){
+										for(var i=0;i<rs.data.length;i++){
+											vue.data.push(rs.data[i]);
+										}
+										vue.isload = false;
+										vue.page++;
+									}
+								});
+							}
+						}
+					}
+				}
+			});
+		};
+	</script>
+</body>
+</html>

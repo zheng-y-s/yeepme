@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget id="A6094619337793"  version="0.0.1">
+  <name>yeep.me</name>
+    <description>yeep.me</description>
+    <author email="developer@apicloud.com" href="http://www.apicloud.com">
+        宇维-zhengys
+    </author>
+    <content src="html/index.html" />
+	<preference name="appBackground" value="rgba(0,0,0,0)"/>
+	<preference name="windowBackground" value="rgba(0,0,0,0)"/>
+	<preference name="frameBackgroundColor" value="rgba(0,0,0,0)"/>
+	<preference name="pageBounce" value="false" />
+	<preference name="autoLaunch" value="true"/>
+	<preference name="autoUpdate" value="true"/>
+	<preference name="smartUpdate" value="false"/>
+	<preference name="debug" value="false"/>
+	<preference name="statusBarAppearance" value="true"/>
+	<preference name="useWKWebView" value="true"/>
+	<permission name="location"/>
+	<permission name="internet"/>
+	<preference name="customRefreshHeader" value="pullRefreshLoop"/>
+	<preference name="backgroundMode" value="remote-notification"/>
+	<access origin="*"/>
+	<feature name="ajpush">
+		<param name="app_key" value="4783cea5e16a8bcc2bf8a5e3" />
+		<param name="channel" value="ywkjyeepme" />
+	</feature>
+	<!-- <meta-data name="JPUSH_CHANNEL" value="ywkjyeepme"/>
+	<meta-data name="JPUSH_APPKEY" value="4783cea5e16a8bcc2bf8a5e3" />
+	<feature name="ajpushGooglePlay">
+		<param name="app_key" value="4783cea5e16a8bcc2bf8a5e3" />
+		<param name="channel" value="ywkjyeepme" />
+	</feature> -->
+</widget>

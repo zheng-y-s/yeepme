@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Devlist</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<style type="text/css">
+		body{background:none;padding-top:0;}
+		#history .content{min-width:320px;display:none;}
+		#history .content .back{border-radius:30px;height:48px;text-align:center;font-weight:bold;color:#f49600;line-height:24px}
+		#history .content .back img{height:100%;display:inline-block;margin-right:10px;}
+		#history .content .item .c .img{position:relative;width:40%;}
+		#history .content .item .c .img img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)-ms-transform:translate(-50%,-50%)-moz-transform:translate(-50%,-50%);-webkit-transform:translate(-50%,-50%);-o-transform:translate(-50%,-50%);}
+		.msg{width:60%;}
+		#history .content .item .c .msg .l{margin:10px 0 0;}
+		#history .content .item .c .msg .l img{width:35px;}
+		#history .content .item .c .msg>div{padding:0;}
+	</style>
+</head>
+
+<body>
+	<div class="container" id="history">
+		<div id="content">
+			<div class="content">
+				<div class="item back" v-on:click="back()">
+					<img src="../images/left.png" alt="" class="img-responsive">{{btn_return}}
+				</div>
+				<div class="item" v-for="(item,index) in data" v-on:click="pick(item)">
+					<div class="title">{{item.dev_code}}</div>
+					<div class="c">
+						<div class="img">
+							<img :src="'../images/dev/'+item.type+'.png'" alt="" class="img-responsive">
+						</div>
+						<div class="msg">
+							<div>
+								<div class="l">
+									<img src="../images/list_power.png" alt="" class="img-responsive">
+								</div>
+								<div class="r">
+									<span>{{item.batprt.replace("%","")}}</span>%
+								</div>
+							</div>
+							<div>
+								<button type="button" class="btn btn-type1" v-on:click="lighting">{{dev_lighting}}</button>
+								<!-- <div class="l">
+									<img src="../images/list_map.png" alt="" class="img-responsive">
+								</div>
+								<div class="r">
+									<span>12</span>KMS
+								</div> -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		apiready = function(){
+			var type = api.pageParam.type
+			new Vue({
+				el: ".content",
+				data: {
+					btn_return: lang.devlist_return,
+					dev_lighting: lang.dev_lighting,
+					company: $api.getStorage("user_comp_name"),
+					data: api.pageParam.data
+				},
+				created: function(){
+					$api.css($api.dom(".content"),"display:block");
+				},
+				methods: {
+					back: function(){
+						api.execScript({
+							name: "main",
+							script: "openPage('home.html',null)",
+						});
+					},
+					lighting: function(e){
+						e.stopPropagation();
+					},
+					pick: function(obj){
+						if(type == "rent"){
+							openWin(type,"html/"+type+".html",{
+								data: obj
+							});
+						}else{
+							var date,time,vue = this;
+							api.openPicker({
+								type: "date",
+								title: lang.devlist_tit_res_d
+							},function(rs_date){
+								date = rs_date.year +"-"+ rs_date.month +"-"+ rs_date.day;
+								api.openPicker({
+									type: "time",
+									title: lang.devlist_tit_res_t
+								},function(rs_time){
+									time = rs_time.hour+":"+rs_time.minute+":00";
+									http_post("user/reserve",{
+										dev_code: obj.dev_code,
+										date: date+" "+time
+									},true,function(rs){
+										toast(rs.msg);
+										api.execScript({
+											name: "main",
+											script: "openPage('home.html',null)",
+										});
+									},function(rs){
+										api.execScript({
+											name: "main",
+											script: "openPage('home.html',null)",
+										});
+									});
+								});
+							});
+						}
+					}
+				},
+			});
+		};
+	</script>
+
+</body>
+
+</html>

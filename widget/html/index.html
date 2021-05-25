@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+	<meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+	<title>Index</title>
+	<link rel="stylesheet" type="text/css" href="../css/base.css" />
+</head>
+<body>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript">
+		var jpush = null, login_init = function(data){
+			for(var key in data){
+				$api.setStorage("user_"+key,data[key]);
+			}
+			//jpush = api.require("ajpushGooglePlay");
+			jpush = api.require("ajpush");
+			jpush.bindAliasAndTags({
+				alias: $api.getStorage("user_secret")+$api.getStorage("user_id"),
+			},function(rs){});
+			jpush.setListener(function(ret){
+				// 消息推送
+				var data = JSON.stringify(ret.extra);
+				switch(ret.content){
+					case "unlock":
+						api.execScript({
+							name: "wait",
+							script: "unlock('"+data+"')"
+						});
+						break;
+					case "setting":
+						api.execScript({
+							name: "main",
+							frameName: "home",
+							script: "act('"+data+"')"
+						});
+						break;
+					/*case "pos":
+						api.execScript({
+							name: "stroke",
+							frameName: "map",
+							script: "setCenter('"+data+"')"
+						});
+						break;
+					case "setting":
+						api.execScript({
+							name: "stroke",
+							script: "hide('"+lang[ret.extra.msg]+"')"
+						});
+						break;*/
+				}
+				
+			});
+			api.openWin({
+				name: 'main',
+				url: "main.html",
+				slidBackEnabled: false
+			});
+		},cancelPush = function(){
+			if(jpush){
+				console.log("取消推送");
+				jpush.bindAliasAndTags({
+					alias: "none",
+				},function(rs){
+					console.log("修改别名"+JSON.stringify(rs));
+				});
+				jpush.removeListener();
+			}
+		};
+		apiready = function(){
+			if($api.getStorage("first") == undefined){
+				api.openWin({
+					name: 'first',
+					url: "first.html",
+				});
+			}else if($api.getStorage("user_token") == undefined){
+				openWin("login","html/login.html",{
+					winName:api.winName,
+				});
+				return;
+			}else{
+				http_post("user/getInfo",{},true,function(rs){
+					var data = rs.data;
+					login_init(data);
+				});
+			}
+		};
+	</script>
+</body>
+</html>

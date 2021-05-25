@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Home</title>
+	<link rel="stylesheet" href="../css/bootstrap.css">
+	<link rel="stylesheet" href="../css/base.css">
+	<link rel="stylesheet" href="../css/style.css">
+	<link rel="stylesheet" href="../css/calen.css">
+	<style type="text/css">
+		body{background:none;padding-top:0;}
+	</style>
+</head>
+
+<body>
+	<div class="container" id="index">
+		<div id="content">
+			<div class="home">
+				<div class="btns">
+					<div class="l" v-on:click="getList('rent')">
+						<img src="../images/pick.png" alt="" class="img-responsive pick">
+						<div>{{pick}}</div>
+					</div>
+					<div class="r" v-on:click="bookDev()">
+						<img src="../images/book.png" alt="" class="img-responsive">
+						<div>{{book}}</div>
+					</div>
+				</div>
+				<div class="content">
+					<div class="top">
+						<div class="l">{{company}}</div>
+						<div class="r">
+							<div>{{user}}</div>
+							<img src="../images/user_pick.png" alt="" class="img-responsive">
+						</div>
+					</div>
+					<div class = "h">
+						<div class="l"></div>
+						<div class="r"></div>
+					</div>
+					<div class="bottom"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript" src="../script/vue.min.js"></script>
+	<script type="text/javascript" src="../script/function.js"></script>
+	<script type="text/javascript" src="../script/calen.js"></script>
+	<script type="text/javascript">
+		apiready = function(){
+			var vue = new Vue({
+				el: ".home",
+				data: {
+					pick: lang.home_pick,
+					book: lang.home_book,
+					user: $api.getStorage("user_name"),
+					company: $api.getStorage("user_comp_name")
+				},
+				methods: {
+					getList: function(type){
+						http_post("dev/getList",{
+							type: type
+						},true,function(rs){
+							if(rs.data.length == 0){
+								toast(lang.dev_nofind);
+							}else{
+								if(rs.url == "/dev"){
+									api.openFrame({
+										name: "home",
+										url: "devlist.html",
+										pageParam: {
+											type: type,
+											data: rs.data
+										},
+									});
+								}else{
+									if(type == "rent"){
+										api.openFrame({
+											name: "home",
+											url: "order.html",
+											pageParam: rs.data
+										});
+									}else{
+										toast(rs.msg);
+									}
+								}
+							}
+						});
+					},
+					bookDev: function(){
+						if($api.getStorage("user_is_book") == 1){
+							http_post("user/getReserve",{},true,function(rs){
+								if(rs.data){
+									console.log(JSON.stringify(rs.data));
+									api.openFrame({
+										name: "reserve",
+										bgColor: "rgba(0,0,0,0)",
+										rect: {
+											marginLeft: 0,
+											marginTop: 0,
+											marginBottom: 0,
+											marginRight: 0
+										},
+										url: "reserve.html",
+										pageParam: rs.data,
+									});
+								}else{
+									var g = Date.now(), now_time = new Date(g), max_time = new Date(g + $api.getStorage("user_book_time")*1000), 
+										minDate = now_time.getFullYear() + '-' + (now_time.getMonth()+1) + '-' + now_time.getDate(),
+										maxDate = max_time.getFullYear() + '-' + (max_time.getMonth()+1) + '-' + max_time.getDate(),
+										minTime = now_time.getHours()+':'+now_time.getMinutes(),
+										maxTime = max_time.getHours()+':'+max_time.getMinutes();
+									if(minDate == maxDate){
+										vue.getTime(minTime, maxTime, maxDate);
+									}else{
+										var cale_date = new Calen();
+										cale_date.init({
+											type: "date",
+											minDate: minDate,
+											maxDate: maxDate,
+											callback: function(date){
+												vue.getTime(minTime, maxTime, date);
+											}
+										});
+									}
+								}
+							});
+						}else{
+							alert("sdfsd");
+						}
+					},
+					getTime: function(min, max, date){
+						var cale_time = new Calen();
+						cale_time.init({
+							type: "time",
+							minTime: min,
+							maxTime: max,
+							callback: function(time){
+								http_post("user/reserve",{
+									date: date+" "+time+":00"
+								},true,function(rs){
+									toast(rs.msg);
+								});
+							}
+						});
+					}
+				}
+			});
+		};
+	</script>
+</body>
+</html>

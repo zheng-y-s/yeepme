@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sign</title>
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style type="text/css">
+        body{background:none;padding-top:0;}
+        /*.form{display: -webkit-box;}*/
+    </style>
+</head>
+
+<body>
+    <div class="container" id = "login">
+        <div id="content" style="box-shadow:0px 7px 7px -3px #868686;margin-top:50px;">
+            <div class = "bottom  login-sign">
+                <div class="forms">
+                    <div class="form">
+                        <img src="../images/email.png" alt="" class = "icon-input" align="absmiddle">
+                        <input type="text" name="email" v-bind:placeholder="email" />     
+                    </div>
+                    <div class="form">
+                        <img src="../images/pwd.png" alt="" class = "icon-input">
+                        <input type="password" name="pwd" v-bind:placeholder="pwd" />
+                    </div>
+                </div>
+                <div class="btns">
+                    <button type="button" class="btn btn-type1" v-on:click="sub">{{login}}</button>
+                </div>
+                <span>
+                    <img src="../images/top.png" class="img-responsive" v-on:click="back">
+                </span>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/vue.min.js"></script>
+    <script type="text/javascript" src="../script/function.js"></script>
+    <script type="text/javascript">
+        apiready = function(){
+            new Vue({
+                el: "#content",
+                data: {
+                    login: lang.sign_login,
+                    email: lang.sign_email,
+                    pwd: lang.sign_pwd
+                },
+                methods: {
+                    sub: function(){
+                        var id = $api.val($api.dom("[name='email']")),
+                            pwd = $api.val($api.dom("[name='pwd']"));
+                        http_post("login/login",{
+                            email: id,
+                            password: pwd
+                        },false,function(rs){
+                            toast(rs.msg);
+                            var user = rs.data;
+                            user.is_temp = 0;
+                            api.execScript({
+                                name: "root",
+                                script: 'login_init('+JSON.stringify(user)+')',
+                            });
+                            setTimeout(function(){
+                                api.closeWin();
+                            },1000);
+                        });
+                    },
+                    back: function(){
+                        api.closeFrame();
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+
+</html>
